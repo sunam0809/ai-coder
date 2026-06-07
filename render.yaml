@@ -5,7 +5,7 @@ services:
     region: oregon
     plan: free
     buildCommand: npm install -g pnpm && pnpm install --frozen-lockfile && pnpm --filter @workspace/api-server run build
-    startCommand: pnpm --filter @workspace/api-server run start
+    startCommand: node artifacts/api-server/dist/index.mjs
     envVars:
       - key: NODE_ENV
         value: production
@@ -23,13 +23,8 @@ services:
     runtime: static
     region: oregon
     plan: free
-    buildCommand: npm install -g pnpm && pnpm install --frozen-lockfile && pnpm --filter @workspace/api-spec run codegen && pnpm --filter @workspace/ai-coder run build
+    buildCommand: npm install -g pnpm && pnpm install --frozen-lockfile && BASE_PATH=/ PORT=3000 pnpm --filter @workspace/ai-coder run build
     staticPublishPath: artifacts/ai-coder/dist/public
-    envVars:
-      - key: BASE_PATH
-        value: /
-      - key: PORT
-        value: 3000
     routes:
       - type: rewrite
         source: /api/*

@@ -1,6 +1,6 @@
-# [Project name]
+# AI Coder
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+An AI-powered coding assistant that lets users chat with an LLM to generate, explain, and improve code.
 
 ## Run & Operate
 
@@ -22,15 +22,38 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/ai-coder/` — React + Vite frontend (chat UI)
+- `artifacts/api-server/` — Express 5 backend (AI proxy, sessions)
+- `lib/db/` — Drizzle ORM schema and migrations
+- `lib/api-spec/` — OpenAPI spec + generated hooks/schemas
+- `render.yaml` — Render deployment config (infra-as-code)
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Contract-first API: OpenAPI spec in `lib/api-spec` drives codegen for React Query hooks and Zod schemas
+- Single monorepo with pnpm workspaces; frontend and API deploy as separate Render services
+- GROQ API used for LLM inference (fast, free tier available)
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- AI chat interface where users type prompts and get code/explanations back from an LLM
+- Backend proxies requests to GROQ so the API key is never exposed to the browser
+
+## Deployment (Render)
+
+Services created via Render API on 2026-06-07:
+
+| Service | Type | URL | Render ID |
+|---------|------|-----|-----------|
+| `ai-coder-api` | Node.js web service | https://ai-coder-api.onrender.com | srv-d8igk2tckfvc73bptnu0 |
+| `ai-coder-frontend` | Static site | https://ai-coder-frontend.onrender.com | srv-d8igjvmrnols73bn2hm0 |
+
+Both services auto-deploy from `main` branch of `https://github.com/sunam0809/ai-coder`.
+
+API service env vars set: `NODE_ENV=production`, `PORT=10000`, `SESSION_SECRET`, `GROQ_API_KEY`, `DATABASE_URL`.
+
+> **Note**: `DATABASE_URL` currently points to Replit's internal Helium DB, which is unreachable from Render.
+> A public Postgres instance (Render Postgres, Neon, or Supabase) is needed for production persistence.
 
 ## User preferences
 
@@ -38,7 +61,8 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Replit's `DATABASE_URL` is an internal Helium DB URL — not accessible from Render or any external host
+- Run `pnpm --filter @workspace/api-spec run codegen` after any OpenAPI spec changes before building
 
 ## Pointers
 
