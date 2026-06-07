@@ -3,7 +3,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { build as esbuild } from "esbuild";
 import esbuildPluginPino from "esbuild-plugin-pino";
-import { rm } from "node:fs/promises";
+import { rm, cp } from "node:fs/promises";
+import { existsSync } from "node:fs";
 
 // Plugins (e.g. 'esbuild-plugin-pino') may use `require` to resolve dependencies
 globalThis.require = createRequire(import.meta.url);
@@ -120,7 +121,20 @@ globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
   });
 }
 
-buildAll().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+async function copyFrontend() {
+  const frontendDist = path.resolve(artifactDir, "..", "ai-coder", "dist", "public");
+  const targetDir = path.resolve(artifactDir, "dist", "public");
+  if (await existsSync(frontendDist)) {
+    await cp(frontendDist, targetDir, { recursive: true });
+    console.log("Copied frontend dist to server dist/public");
+  } else {
+    console.log("No frontend dist found at", frontendDist, "- skipping copy");
+  }
+}
+
+buildAll()
+  .then(() => copyFrontend())
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
