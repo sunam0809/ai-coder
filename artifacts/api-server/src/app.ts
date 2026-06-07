@@ -36,9 +36,9 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
 
-// Serve pre-built frontend in production
+// Serve pre-built frontend static files
 const frontendDistPath = path.resolve(__dirname, "public");
-if (process.env["NODE_ENV"] === "production" && existsSync(frontendDistPath)) {
+if (existsSync(frontendDistPath)) {
   app.use(express.static(frontendDistPath));
   app.get("*", (_req, res) => {
     res.sendFile(path.join(frontendDistPath, "index.html"));
